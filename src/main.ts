@@ -6,12 +6,19 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger(winstonLoggerOptions), // Uso de logger en toda la AP
+    logger: WinstonModule.createLogger(winstonLoggerOptions), // Uso de logger en toda la API
   });
 
   app.setGlobalPrefix('api/v1/restaurant');
-  
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true })); // Validación global de DTOs
+
+  // ✅ Habilita CORS para todos los orígenes
+  app.enableCors({
+    origin: '*', // Permitir todos los orígenes (solo en desarrollo)
+  });
+
+  // ✅ Validación global
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

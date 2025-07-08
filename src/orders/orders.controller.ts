@@ -8,11 +8,16 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
+  BadRequestException,
+  HttpCode,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { errorResponse } from 'src/common/responses';
+import { Http } from 'winston/lib/winston/transports';
 
 @Controller('orders')
 export class OrdersController {
@@ -43,6 +48,21 @@ export class OrdersController {
   ) {
     const userId = req.user['userId'];
     return this.ordersService.findByUser(userId);
+  }
+
+
+  @Post('filter')
+  @UseGuards(AuthGuard('jwt'))
+  filterOrders(
+    @Body()
+    body: {
+      startDate?: string;
+      endDate?: string;
+      minTotal?: number;
+      maxTotal?: number;
+    },
+  ) {
+    return this.ordersService.filterOrders(body);
   }
 
   @Delete(':id')

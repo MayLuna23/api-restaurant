@@ -92,7 +92,7 @@ export class UsersService {
       const cached = await this.cacheManager.get(cacheKey);
       if (cached) {
         this.logger.log(`[UsersService][${method}] Returning users from cache`);
-        return cached;
+        return successResponse(cached, 200, 'Users found successfully (cache)');
       }
 
       this.logger.log(

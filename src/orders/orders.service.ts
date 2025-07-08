@@ -4,6 +4,7 @@ import {
   ConflictException,
   InternalServerErrorException,
   HttpException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -104,30 +105,29 @@ export class OrdersService {
   }
 
   async findByUser(userId: number) {
-  const orders = await this.prisma.order.findMany({
-    where: {
-      userId,
-    },
-    include: {
-      user: {
-        select: {
-          name: true,
+    const orders = await this.prisma.order.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        OrderItem: {
+          include: {
+            product: true,
+          },
         },
       },
-      OrderItem: {
-        include: {
-          product: true,
-        },
+      orderBy: {
+        createdAt: 'desc',
       },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+    });
 
-  return successResponse(orders, 200, 'Orders by user fetched successfully');
-}
-
+    return successResponse(orders, 200, 'Orders by user fetched successfully');
+  }
 
   async remove(orderId: number) {
     const order = await this.prisma.order.findUnique({
@@ -140,5 +140,50 @@ export class OrdersService {
 
     await this.prisma.order.delete({ where: { orderId } });
     return successResponse(null, 200, 'Order deleted successfully');
+  }
+
+  async filterOrders({
+    startDate,
+    endDate,
+    minTotal,
+    maxTotal,
+  }: {
+    startDate?: string;
+    endDate?: string;
+    minTotal?: number;
+    maxTotal?: number;
+  }) {
+    try {
+      const where: any = {};
+
+      if (startDate && endDate) {
+        where.createdAt = {
+          gte: new Date(`${startDate}T00:00:00`),
+          lte: new Date(`${endDate}T23:59:59.999`),
+        };
+      }
+
+      if (minTotal !== undefined && maxTotal !== undefined) {
+        where.total = {
+          gte: minTotal,
+          lte: maxTotal,
+        };
+      }
+
+      const orders = await this.prisma.order.findMany({
+        where,
+        include: {
+          user: { select: { name: true } },
+          OrderItem: { include: { product: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return successResponse(orders, 200, 'Orders filtered successfully');
+    } catch (error) {
+      throw new InternalServerErrorException(
+        errorResponse(500, 'Error filtering orders', error.message),
+      );
+    }
   }
 }
