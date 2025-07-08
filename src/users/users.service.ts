@@ -20,7 +20,7 @@ export class UsersService {
 
   constructor(
     private prisma: PrismaService,
-    @Inject('CACHE_MANAGER') private cacheManager: Cache, // Inyectar el servicio de caché
+    @Inject('CACHE_MANAGER') private cacheManager: Cache,
   ) {}
 
   // Create a new user

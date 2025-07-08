@@ -19,7 +19,7 @@ model User {
 
 model Product {
   productId Int        @id @default(autoincrement())
-  name      String
+  name      String     @unique
   price     Float
   OrderItem OrderItem[]
   createdAt DateTime   @default(now())
@@ -39,7 +39,7 @@ model OrderItem {
   quantity    Int     @default(1)
   product     Product @relation(fields: [productId], references: [productId])
   productId   Int
-  order       Order   @relation(fields: [orderId], references: [orderId])
+  order       Order   @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
   orderId     Int
 }
 
