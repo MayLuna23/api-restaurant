@@ -53,7 +53,15 @@ export class AuthService {
 
       const jwtToken = await this.jwtService.signAsync(payload);
 
-      return successResponse(jwtToken, 200, 'User authenticated successfully');
+      return successResponse(
+        {
+          name: data.name,
+          role: data.role,
+          token: jwtToken,
+        },
+        200,
+        'User authenticated successfully',
+      );
     } catch (error) {
       this.logger.error(
         `[UsersService][${method}] Error searching for user with email ${email}: ${error.message}`,

@@ -50,7 +50,6 @@ export class OrdersController {
     return this.ordersService.findByUser(userId);
   }
 
-
   @Post('filter')
   @UseGuards(AuthGuard('jwt'))
   filterOrders(
@@ -60,9 +59,31 @@ export class OrdersController {
       endDate?: string;
       minTotal?: number;
       maxTotal?: number;
+      bodyUserId?: number;
     },
+    @Req()
+    req: Request & { user: { userId: number; email: string; name: string, role: string } },
   ) {
-    return this.ordersService.filterOrders(body);
+    // si es admin preguntamos si viene el userId en el body
+    // si es admin y no viene el userId en el body, decimos que el userId es null
+    //     y buscara todas las ordenes
+    // si no es admin, usamos el userId del token
+
+    let dataWithId = {};
+    
+    if (req.user['role'] === 'admin' && body.bodyUserId) {
+      dataWithId = body;
+    }
+
+    else if (req.user['role'] === 'admin' && !body.bodyUserId) {
+      dataWithId = {...body, userId: null };
+    }
+
+    else if (req.user['role'] !== 'admin') {
+      dataWithId = {...body, userId: req.user['userId'] };
+    }
+   
+    return this.ordersService.filterOrders(dataWithId);
   }
 
   @Delete(':id')

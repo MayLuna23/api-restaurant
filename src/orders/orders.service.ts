@@ -147,14 +147,23 @@ export class OrdersService {
     endDate,
     minTotal,
     maxTotal,
+    userId,
+    bodyUserId
   }: {
     startDate?: string;
     endDate?: string;
     minTotal?: number;
     maxTotal?: number;
+    bodyUserId?: number,
+    userId?: number;
   }) {
     try {
+      console.log(startDate, endDate, minTotal, maxTotal, userId, bodyUserId);
       const where: any = {};
+
+      if (bodyUserId || userId) {
+        where.userId = bodyUserId || userId;
+      }
 
       if (startDate && endDate) {
         where.createdAt = {
@@ -169,7 +178,7 @@ export class OrdersService {
           lte: maxTotal,
         };
       }
-
+      console.log(where)
       const orders = await this.prisma.order.findMany({
         where,
         include: {
@@ -178,6 +187,7 @@ export class OrdersService {
         },
         orderBy: { createdAt: 'desc' },
       });
+
 
       return successResponse(orders, 200, 'Orders filtered successfully');
     } catch (error) {

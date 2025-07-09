@@ -23,60 +23,67 @@ export class UsersService {
     @Inject('CACHE_MANAGER') private cacheManager: Cache,
   ) {}
 
-  // Create a new user
-  async create(newUserData: CreateUserDto) {
-    const method = 'create';
-    this.logger.log(
-      `[UsersService][${method}] Creating new user: ${JSON.stringify({ ...newUserData, password: '***' })}`, // Exclude password from logs for security
-    );
+// Create a new user
+async create(newUserData: CreateUserDto) {
+  const method = 'create';
+  this.logger.log(
+    `[UsersService][${method}] Creating new user: ${JSON.stringify({ ...newUserData, password: '***' })}`, // Exclude password from logs for security
+  );
 
-    try {
-      // Check if user already exists
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: newUserData.email },
-      });
-      if (existingUser) {
-        this.logger.warn(
-          `[UsersService][${method}] User with email ${newUserData.email} already exists`,
-        );
-        throw new ConflictException(
-          errorResponse(
-            409,
-            'User already exists',
-            `User with email ${newUserData.email} already exists`,
-          ),
-        );
-      }
-
-      const hashedPassword = await bcrypt.hash(newUserData.password, 10);
-
-      const user = await this.prisma.user.create({
-        data: {
-          ...newUserData,
-          password: hashedPassword, // Hash the password before saving
-        },
-      });
-
-      this.logger.log(
-        `[UsersService][${method}] User created with id ${user.userId}`,
+  try {
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: newUserData.email },
+    });
+    if (existingUser) {
+      this.logger.warn(
+        `[UsersService][${method}] User with email ${newUserData.email} already exists`,
       );
-
-      // Excluid password from the result for security
-      const result = omit(user, ['password']);
-      return successResponse(result, 201, 'User created successfully');
-    } catch (error) {
-      this.logger.error(
-        `[UsersService][${method}] Error creating user: ${error.message}`,
-        error.stack,
-      );
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        errorResponse(500, 'Error creating user', error.message),
+      throw new ConflictException(
+        errorResponse(
+          409,
+          'User already exists',
+          `User with email ${newUserData.email} already exists`,
+        ),
       );
     }
+
+    const hashedPassword = await bcrypt.hash(newUserData.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        ...newUserData,
+        password: hashedPassword, // Hash the password before saving
+      },
+    });
+
+    this.logger.log(
+      `[UsersService][${method}] User created with id ${user.userId}`,
+    );
+
+    // Invalidate the cache after creating a new user
+    const cacheKey = 'users:all';
+    await this.cacheManager.del(cacheKey);
+    this.logger.log(
+      `[UsersService][${method}] Invalidated cache for key "${cacheKey}"`,
+    );
+
+    // Exclude password from the result
+    const result = omit(user, ['password']);
+    return successResponse(result, 201, 'User created successfully');
+  } catch (error) {
+    this.logger.error(
+      `[UsersService][${method}] Error creating user: ${error.message}`,
+      error.stack,
+    );
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new InternalServerErrorException(
+      errorResponse(500, 'Error creating user', error.message),
+    );
   }
+}
 
   // Find all users with caching
   // This method checks the cache first and only queries the database if the cache is empty
@@ -159,42 +166,5 @@ export class UsersService {
     }
   }
 
-  // Find a user by ID
-  // This method retrieves a user by their ID and throws an error if not found
-  // async findOne(id: number) {
-  //   const method = 'findOne';
-  //   this.logger.log(`[UsersService][${method}] Finding user with id ${id}`);
 
-  //   try {
-  //     const user = await this.prisma.user.findUnique({
-  //       where: { userId: id },
-  //       select: {
-  //         userId: true,
-  //         name: true,
-  //         role: true,
-  //         email: true,
-  //         createdAt: true,
-  //       },
-  //     });
-
-  //     if (!user) {
-  //       this.logger.warn(
-  //         `[UsersService][${method}] User with id ${id} not found`,
-  //       );
-  //       throw new NotFoundException(errorResponse(404, `User with id ${id} not found`));
-  //     }
-
-  //     this.logger.log(`[UsersService][${method}] User with id ${id} found`);
-
-  //     return successResponse(user, 200, 'User found successfully');
-  //   } catch (error) {
-  //     this.logger.error(
-  //       `[UsersService][${method}] Error finding user: ${error.message}`,
-  //       error.stack,
-  //     );
-  //     throw new InternalServerErrorException(
-  //       errorResponse(500, 'Error fetching user', error.message),
-  //     );
-  //   }
-  // }
 }
