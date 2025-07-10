@@ -16,8 +16,11 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
+# Set environment
+ENV NODE_ENV=development
+
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Development command: run migrations, seed database, and start the server
+# Development command
 CMD npx prisma migrate dev --name init --skip-seed && npm run seed && npm run start:dev
