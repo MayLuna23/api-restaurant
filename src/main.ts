@@ -8,17 +8,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger(winstonLoggerOptions), // Uso de logger en toda la API
+    logger: WinstonModule.createLogger(winstonLoggerOptions),
   });
 
   app.setGlobalPrefix('api/v1/restaurant');
-
-  // ✅ Habilita CORS para todos los orígenes
-  app.enableCors({
-    origin: '*', // Permitir todos los orígenes (solo en desarrollo)
-  });
-
-  // ✅ Validación global
+app.enableCors({
+  origin: [
+    'http://localhost:4000',
+    'http://13.221.146.190:4000',
+  ],
+   methods: ['GET', 'POST', 'DELETE'],
+  credentials: true,
+});
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
     const config = new DocumentBuilder()
@@ -29,7 +30,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document); // URL: http://localhost:3000/docs
+  SwaggerModule.setup('docs', app, document);
 
 
   await app.listen(process.env.PORT ?? 3000);
