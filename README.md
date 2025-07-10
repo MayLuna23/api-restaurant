@@ -17,6 +17,20 @@ http://localhost:3000/api/v1/restaurant
 
 http://localhost:3000/docs
 
+# Technologies
+
+- Node/TypeScript
+- Nest
+- Docker
+- JWT
+- PassportStrategy
+- Bcrypt
+- Prisma
+- Postgres
+- Logger Winston
+- Cache
+- Swagger
+
 
 🍔 Ocean Restaurant API
 A RESTful API for managing restaurant orders, products, and users, built with TypeScript & NestJS, Prisma, and JWT authentication
