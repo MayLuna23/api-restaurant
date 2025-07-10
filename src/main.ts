@@ -16,6 +16,7 @@ app.enableCors({
   origin: [
     'http://localhost:4000',
     'http://13.221.146.190:4000',
+    'https://ocean-restaurant.vercel.app'
   ],
    methods: ['GET', 'POST', 'DELETE'],
   credentials: true,
