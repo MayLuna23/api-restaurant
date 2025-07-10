@@ -2,7 +2,7 @@
 
 1. Clone the repository
 
-`git clone https://github.com/MayLuna23/api-restaurant.git`
+`git clone https://github.com/MayLuna23/api-restaurant.git`  
 `cd api-restaurant`
 
 2. Start the application with Docker
@@ -30,6 +30,16 @@ http://localhost:3000/docs
 - Logger Winston
 - Cache
 - Swagger
+
+ 5. Users Credentials:
+
+    Role Admin:
+    email: admin@email.com
+    password: admin123#
+    
+    Role Waiter:
+    email: mayra@email.com
+    password: mayra123#
 
 
 🍔 Ocean Restaurant API
