@@ -10,9 +10,6 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { errorResponse, successResponse } from 'src/common/responses';
 
-// El servicio de autenticación se encarga de validar las credenciales del usuario
-// y generar un token JWT si las credenciales son correctas.
-// Este servicio utiliza el UsersService para buscar al usuario por su correo electrónico
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -29,7 +26,6 @@ export class AuthService {
     );
     try {
       const data = await this.usersService.findByEmail(email);
-      // Si no se encuentra el usuario, lanzamos una excepción de autorización
       if (!data) {
         throw new UnauthorizedException(
           errorResponse(401, 'Email or password is incorrect'),
@@ -37,7 +33,6 @@ export class AuthService {
       }
 
       const isMatch = await bcrypt.compare(password, data.password);
-      // Si la contraseña no coincide, lanzamos una excepción de autorización
       if (!isMatch) {
         throw new UnauthorizedException(
           errorResponse(401, 'Email or password is incorrect'),

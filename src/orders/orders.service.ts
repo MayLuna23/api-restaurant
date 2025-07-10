@@ -4,7 +4,6 @@ import {
   ConflictException,
   InternalServerErrorException,
   HttpException,
-  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -158,7 +157,6 @@ export class OrdersService {
     userId?: number;
   }) {
     try {
-      console.log(startDate, endDate, minTotal, maxTotal, userId, bodyUserId);
       const where: any = {};
 
       if (bodyUserId || userId) {
@@ -178,7 +176,7 @@ export class OrdersService {
           lte: maxTotal,
         };
       }
-      console.log(where)
+
       const orders = await this.prisma.order.findMany({
         where,
         include: {
